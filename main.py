@@ -1,26 +1,24 @@
 from tkinter import *
 
-canvas_width = 500
-canvas_height = 150
+canvas_width = 800
+canvas_height = 600
 
 
 def paint(event):
-    python_green = "#476042"
-    x1, y1 = (event.x - 1), (event.y - 1)
-    x2, y2 = (event.x + 1), (event.y + 1)
-    w.create_oval(x1, y1, x2, y2, fill=python_green)
+    x1, y1 = (event.x - 4), (event.y - 4)
+    x2, y2 = (event.x + 4), (event.y + 4)
+    w.create_oval(x1, y1, x2, y2, fill="#0080ff", tag="vertex")
 
 
 
 master = Tk()
-master.title("Points")
+master.title("")
 w = Canvas(master,
            width=canvas_width,
            height=canvas_height)
 w.pack(expand=YES, fill=BOTH)
-w.bind("<B1-Motion>", paint)
+w.bind("<ButtonRelease-1>", paint)
 
-message = Label(master, text="Press and Drag the mouse to draw")
-message.pack(side=BOTTOM)
+
 
 mainloop()

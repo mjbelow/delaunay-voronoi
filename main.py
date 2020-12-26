@@ -132,6 +132,8 @@ def paint(event):
         for tri in list(combinations((set(triangles[contains[0]]) | {last_point}), 3)):
             if last_point in tri:
                 triangles.append(tri)
+        # remove triangle containing point
+        triangles.pop(contains[0])
     else:        
         # create triangles with added point and all the vertices of triangles that were removed
         for tri in list(combinations(list(vertices_of_new_triangles | {last_point}), 3)):
@@ -163,8 +165,8 @@ master.title("")
 
 # create points for super triangle
 points.append((400,-300))
-points.append((-200,900))
-points.append((1000,900))
+points.append((-400,900))
+points.append((1200,900))
 
 # add super triangle
 triangles.append((0,1,2))
@@ -175,6 +177,19 @@ w = Canvas(master,
 w.pack(expand=YES, fill=BOTH)
 w.bind("<ButtonRelease-1>", paint)
 
+class myPoint:
+  def __init__(self, x, y):
+    self.x = x
+    self.y = y
+
+p1 = myPoint(400, 300)
+paint(p1)
+
+p1 = myPoint(400, 400)
+paint(p1)
+
+p1 = myPoint(600, 300)
+paint(p1)
 
 
 mainloop()

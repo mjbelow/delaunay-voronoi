@@ -112,17 +112,21 @@ def paint(event):
         shared_segment=sharedSegment(tri_a, tri_b)
         if shared_segment != {}:
             vertices_of_new_triangles = vertices_of_new_triangles | (set(tri_a) | set(tri_b))
-            triangles_to_be_removed = triangles_to_be_removed | (set(combo[0]) | set(combo[1]))
+            triangles_to_be_removed = triangles_to_be_removed | set(combo)
             shared_segments.append(shared_segment)
+
 
     # create a list of the indices of triangles to be removed, and reverse order to delete from "triangles" list
     triangles_to_be_removed = list(triangles_to_be_removed)
     triangles_to_be_removed.sort(reverse=True)
+    print(triangles)
+    print(triangles_to_be_removed)
 
     # remove triangles, which contained the point, that had a segment that was shared
     for i in triangles_to_be_removed:
         triangles.pop(i)
         
+    print(triangles)
         
     if len(contains) == 1:
         for tri in list(combinations((set(triangles[contains[0]]) | {last_point}), 3)):
@@ -134,6 +138,8 @@ def paint(event):
             # if triangle vertices contain added point, add triangle to list
             if last_point in tri:
                 triangles.append(tri)
+    
+    print(triangles)
 
     # draw vertex
     x1, y1 = (event.x - 4), (event.y - 4)
@@ -145,7 +151,7 @@ def paint(event):
     w.delete("triangle")
     # draw triangles
     for triangle in triangles:
-        print(triangle)
+        # print(triangle)
         w.create_polygon(points[triangle[0]], points[triangle[1]], points[triangle[2]], fill='', width=1, outline='red', tag="triangle")
 
 

@@ -134,37 +134,11 @@ def paint(event):
     x2, y2 = (event.x + 4), (event.y + 4)
     w.create_oval(x1, y1, x2, y2, fill="#0080ff", tag="vertex")
 
+    # draw triangles
+    for triangle in triangles:
+        w.create_polygon(points[triangle[0]], points[triangle[1]], points[triangle[2]], fill='', width=1, outline='red')
 
-    # draw segments
-    w.delete("segment_super")
-    for segment in list(combinations(list(range(len(points))), 2)):
 
-        # keep track of segments connecting to super triangle
-        if any(n in segment for n in [0, 1, 2]):
-            tag="segment_super"
-        else:
-            tag="segment"
-        
-        # only draw segments using the last added point
-        if last_point in segment:
-            w.create_line(points[segment[0]], points[segment[1]], tag=tag)
-            num_of_lines=num_of_lines+1
-
-    # draw circumcircles
-    w.delete("circumcircle")
-    for circle in list(combinations(list(range(len(points))), 3)):
-
-        if last_point in circle:
-            # get center and radius of circle given 3 points, each containing last point added
-            hkr=findCircle(points[circle[0]], points[circle[1]], points[circle[2]])
-
-            # draw circle
-            w.create_circle(hkr[0], hkr[1], hkr[2], tag="circumcircle")
-
-            num_of_circles=num_of_circles+1
-
-    print("lines",num_of_lines)
-    print("circles",num_of_circles)
 
 
 

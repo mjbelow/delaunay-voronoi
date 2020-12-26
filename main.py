@@ -88,10 +88,10 @@ def paint(event):
     contains=[]
     
     for i in range(len(triangles)):
-        hkr=findCircle(points[triangles[i][0], points[triangles[i][1]], points[triangles[i][2]])
+        hkr=findCircle(points[triangles[i][0]], points[triangles[i][1]], points[triangles[i][2]])
         
         # compare distance from circumcenter to added point, to circumcircle's radius
-        if dist((h[0], k[1]), points[last_point]) < hkr[2]:
+        if dist((hkr[0], hkr[1]), points[last_point]) < hkr[2]:
             contains.append(i)
             
     # if more than one triangle's circumcircle contains added point, keep track of segment that needs to be removed
@@ -116,7 +116,7 @@ def paint(event):
             shared_segments.append(shared_segment)
 
     # create a list of the indices of triangles to be removed, and reverse order to delete from "triangles" list
-    triangles_to_be_removed = set(triangles_to_be_removed)
+    triangles_to_be_removed = list(triangles_to_be_removed)
     triangles_to_be_removed.sort(reverse=True)
 
     # remove triangles, which contained the point, that had a segment that was shared

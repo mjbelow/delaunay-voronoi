@@ -87,34 +87,43 @@ def paint(event):
     # find out what triangle's circumcircles contain added point
     contains=[]
     
-    for tri in triangles:
-        hkr=findCircle(points[tri[0], points[tri[1]], points[tri[2]])
+    for i in range(len(triangles)):
+        hkr=findCircle(points[triangles[i][0], points[triangles[i][1]], points[triangles[i][2]])
         
         # compare distance from circumcenter to added point, to circumcircle's radius
         if dist((h[0], k[1]), points[last_point]) < hkr[2]:
-            contains.append(tri)
+            contains.append(i)
             
     # if more than one triangle's circumcircle contains added point, keep track of segment that needs to be removed
     shared_segments=[]
         
     # get all the vertices that added point needs to form new triangles with
     vertices_of_new_triangles=set()
+    triangles_to_be_removed=set()
         
-    for tri in combinations(contains, 2):
-        shared_segment=sharedSegment(tri[0], tri[1])
+    for combo in list(combinations(contains, 2)):
+    
+        # pair of triangles that contain point
+        tri_a = triangles[combo[0]]
+        tri_b = triangles[combo[1]]
+        
+        # if two triangles share a segment, they need to be removed, and then the point needs to connect to all vertices of these triangles
+        shared_segment=sharedSegment(tri_a, tri_b)
         if shared_segment != {}:
-            # if two triangles share a segment, they need to be removed, and then the point needs to connect to all vertices of these triangles
-            vertices_of_new_triangles = vertices_of_new_triangles | (set(tri[0]) | set(tri[1]))
+            vertices_of_new_triangles = vertices_of_new_triangles | (set(tri_a) | set(tri_b))
+            triangles_to_be_removed = triangles_to_be_removed | (set(combo[0]) | set(combo[1]))
             shared_segments.append(shared_segment)
 
+    # create a list of the indices of triangles to be removed, and reverse order to delete from "triangles" list
+    triangles_to_be_removed = set(triangles_to_be_removed)
+    triangles_to_be_removed.sort(reverse=True)
 
-    # create triangles with added point
-    for tri in contains:
-    
-        
-        
     # remove triangles, which contained the point, that had a segment that was shared
-    triangles[:] = filterfalse( , triangles)
+    for i in triangles_to_be_removed:
+        triangles.pop(i)
+        
+    # create triangles with added point
+    
 
     # draw vertex
     x1, y1 = (event.x - 4), (event.y - 4)

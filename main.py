@@ -135,11 +135,19 @@ def paint(event):
         # remove triangle containing point
         triangles.pop(contains[0])
     else:        
+        new_triangles=[]
         # create triangles with added point and all the vertices of triangles that were removed
         for tri in list(combinations(list(vertices_of_new_triangles | {last_point}), 3)):
-            # if triangle vertices contain added point, add triangle to list
+            # if triangle vertices contain added point, use triangle
             if last_point in tri:
-                triangles.append(tri)
+                for orig_tri in triangles:                
+                    if sharedSegment(orig_tri, tri) != {}:
+                        # new triangle has found a shared segment with original triangles, so add it and stop looking
+                        new_triangles.append(tri)
+                        break
+                        
+        # update original triangles with new triangles
+        triangles = triangles + new_triangles
     
     print(triangles)
 

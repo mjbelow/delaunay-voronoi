@@ -1,6 +1,6 @@
 from tkinter import *
 from itertools import *
-from math import sqrt
+from math import *
 
 def _create_circle(self, x, y, r, **kwargs):
     return self.create_oval(x-r, y-r, x+r, y+r, **kwargs)
@@ -60,10 +60,18 @@ def findCircle(p1, p2, p3):
     # print("Centre = (", h, ", ", k, ")");
     # print("Radius = ", r);
 
+def sharedSegment(tri_a, tri_b):
+    for a in set(combinations(tri_a, 2)):
+        for b in set(combinations(tri_b, 2)):
+            if a == b:
+                return a
+    return {}
+
 canvas_width = 800
 canvas_height = 600
 
 points=[]
+triangles=[]
 num_of_lines = 0
 num_of_circles = 0
 
@@ -72,22 +80,61 @@ def paint(event):
 
     # keep track of points
     points.append((event.x, event.y))
+    
+    # index of last point added
+    last_point = len(points)-1
+    
+    # find out what triangle's circumcircles contain added point
+    contains=[]
+    
+    for tri in triangles:
+        hkr=findCircle(points[tri[0], points[tri[1]], points[tri[2]])
+        
+        # compare distance from circumcenter to added point, to circumcircle's radius
+        if dist((h[0], k[1]), points[last_point]) < hkr[2]:
+            contains.append(tri)
+            
+    # if more than one triangle's circumcircle contains added point, keep track of segment that needs to be removed
+    shared_segments=[]
+        
+    # get all the vertices that added point needs to form new triangles with
+    vertices_of_new_triangles=set()
+        
+    for tri in combinations(contains, 2):
+        shared_segment=sharedSegment(tri[0], tri[1])
+        if shared_segment != {}:
+            # if two triangles share a segment, they need to be removed, and then the point needs to connect to all vertices of these triangles
+            vertices_of_new_triangles = vertices_of_new_triangles | (set(tri[0]) | set(tri[1]))
+            shared_segments.append(shared_segment)
+
+
+    # create triangles with added point
+    for tri in contains:
+    
+        
+        
+    # remove triangles, which contained the point, that had a segment that was shared
+    triangles[:] = filterfalse( , triangles)
 
     # draw vertex
     x1, y1 = (event.x - 4), (event.y - 4)
     x2, y2 = (event.x + 4), (event.y + 4)
     w.create_oval(x1, y1, x2, y2, fill="#0080ff", tag="vertex")
 
-    # index of last point added
-    last_point = len(points)-1
 
     # draw segments
-    w.delete("segment")
+    w.delete("segment_super")
     for segment in list(combinations(list(range(len(points))), 2)):
 
+        # keep track of segments connecting to super triangle
+        if any(n in segment for n in [0, 1, 2]):
+            tag="segment_super"
+        else:
+            tag="segment"
+        
         # only draw segments using the last added point
         if last_point in segment:
-            w.create_line(points[segment[0]], points[segment[1]], tag="segment")
+            w.create_line(points[segment[0]], points[segment[1]], tag=tag)
             num_of_lines=num_of_lines+1
 
     # draw circumcircles
@@ -110,6 +157,15 @@ def paint(event):
 
 master = Tk()
 master.title("")
+
+# create points for super triangle
+points.append((400,-300))
+points.append((-200,900))
+points.append((1200,900))
+
+# add super triangle
+triangles.append((0,1,2))
+
 w = Canvas(master,
            width=canvas_width,
            height=canvas_height)

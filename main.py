@@ -88,12 +88,10 @@ def paint(event):
     contains=[]
     
     for i in range(len(triangles)):
-        print(0)
         hkr=findCircle(points[triangles[i][0]], points[triangles[i][1]], points[triangles[i][2]])
         
         # compare distance from circumcenter to added point, to circumcircle's radius
         if dist((hkr[0], hkr[1]), points[last_point]) < hkr[2]:
-            print(342)
             contains.append(i)
             
     # if more than one triangle's circumcircle contains added point, keep track of segment that needs to be removed
@@ -105,8 +103,7 @@ def paint(event):
     triangles_to_be_removed=set()
         
     for combo in list(combinations(contains, 2)):
-    
-        print(1)
+         
         # pair of triangles that contain point
         tri_a = triangles[combo[0]]
         tri_b = triangles[combo[1]]
@@ -124,25 +121,32 @@ def paint(event):
 
     # remove triangles, which contained the point, that had a segment that was shared
     for i in triangles_to_be_removed:
-        print(2)
         triangles.pop(i)
         
-    # create triangles with added point and all the vertices of triangles that were removed
-    for tri in list(combinations(list(vertices_of_new_triangles | {last_point}), 3)):
-        # if triangle vertices contain added point, add triangle to list
-        print(3)
-        if last_point in tri:
-            triangles.append(tri)
+        
+    if len(contains) == 1:
+        for tri in list(combinations((set(triangles[contains[0]]) | {last_point}), 3)):
+            if last_point in tri:
+                triangles.append(tri)
+    else:        
+        # create triangles with added point and all the vertices of triangles that were removed
+        for tri in list(combinations(list(vertices_of_new_triangles | {last_point}), 3)):
+            # if triangle vertices contain added point, add triangle to list
+            if last_point in tri:
+                triangles.append(tri)
 
     # draw vertex
     x1, y1 = (event.x - 4), (event.y - 4)
     x2, y2 = (event.x + 4), (event.y + 4)
     w.create_oval(x1, y1, x2, y2, fill="#0080ff", tag="vertex")
 
+
+
+    w.delete("triangle")
     # draw triangles
     for triangle in triangles:
         print(triangle)
-        w.create_polygon(points[triangle[0]], points[triangle[1]], points[triangle[2]], fill='', width=1, outline='red')
+        w.create_polygon(points[triangle[0]], points[triangle[1]], points[triangle[2]], fill='', width=1, outline='red', tag="triangle")
 
 
 

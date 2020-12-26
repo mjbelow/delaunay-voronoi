@@ -97,8 +97,9 @@ def paint(event):
     # if more than one triangle's circumcircle contains added point, keep track of segment that needs to be removed
     shared_segments=[]
         
-    # get all the vertices that added point needs to form new triangles with
+    # get all the vertices, which added point needs, to add new triangles
     vertices_of_new_triangles=set()
+    # get indices of "triangles" list that need to be removed
     triangles_to_be_removed=set()
         
     for combo in list(combinations(contains, 2)):
@@ -122,8 +123,11 @@ def paint(event):
     for i in triangles_to_be_removed:
         triangles.pop(i)
         
-    # create triangles with added point
-    
+    # create triangles with added point and all the vertices of triangles that were removed
+    for tri in list(combinations(list(vertices_of_new_triangles | {last_point}), 3)):
+        # if triangle vertices contain added point, add triangle to list
+        if last_point in tri:
+            triangles.add(tri)
 
     # draw vertex
     x1, y1 = (event.x - 4), (event.y - 4)

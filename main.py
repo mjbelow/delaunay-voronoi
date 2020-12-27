@@ -76,38 +76,38 @@ num_of_lines = 0
 num_of_circles = 0
 
 def paint(event):
-    global points, num_of_lines, num_of_circles
+    global points, num_of_lines, num_of_circles, triangles
 
     # keep track of points
     points.append((event.x, event.y))
-    
+
     # index of last point added
     last_point = len(points)-1
-    
+
     # find out what triangle's circumcircles contain added point
     contains=[]
-    
+
     for i in range(len(triangles)):
         hkr=findCircle(points[triangles[i][0]], points[triangles[i][1]], points[triangles[i][2]])
-        
+
         # compare distance from circumcenter to added point, to circumcircle's radius
         if dist((hkr[0], hkr[1]), points[last_point]) < hkr[2]:
             contains.append(i)
-            
+
     # if more than one triangle's circumcircle contains added point, keep track of segment that needs to be removed
     shared_segments=[]
-        
+
     # get all the vertices, which added point needs, to add new triangles
     vertices_of_new_triangles=set()
     # get indices of "triangles" list that need to be removed
     triangles_to_be_removed=set()
-        
+
     for combo in list(combinations(contains, 2)):
-         
+
         # pair of triangles that contain point
         tri_a = triangles[combo[0]]
         tri_b = triangles[combo[1]]
-        
+
         # if two triangles share a segment, they need to be removed, and then the point needs to connect to all vertices of these triangles
         shared_segment=sharedSegment(tri_a, tri_b)
         if shared_segment != {}:
@@ -125,30 +125,34 @@ def paint(event):
     # remove triangles, which contained the point, that had a segment that was shared
     for i in triangles_to_be_removed:
         triangles.pop(i)
-        
+
     print(triangles)
-        
+
     if len(contains) == 1:
         for tri in list(combinations((set(triangles[contains[0]]) | {last_point}), 3)):
             if last_point in tri:
                 triangles.append(tri)
         # remove triangle containing point
         triangles.pop(contains[0])
-    else:        
+    else:
         new_triangles=[]
         # create triangles with added point and all the vertices of triangles that were removed
         for tri in list(combinations(list(vertices_of_new_triangles | {last_point}), 3)):
             # if triangle vertices contain added point, use triangle
             if last_point in tri:
-                for orig_tri in triangles:                
+                if sharedSegment((0,1,2), tri) != {}:
+                        # if new triangle connects to two vertices of super triangle, add it
+                        new_triangles.append(tri)
+                        continue
+                for orig_tri in triangles:
                     if sharedSegment(orig_tri, tri) != {}:
                         # new triangle has found a shared segment with original triangles, so add it and stop looking
                         new_triangles.append(tri)
                         break
-                        
+
         # update original triangles with new triangles
         triangles = triangles + new_triangles
-    
+
     print(triangles)
 
     # draw vertex

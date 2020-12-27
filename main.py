@@ -60,11 +60,17 @@ def findCircle(p1, p2, p3):
     # print("Centre = (", h, ", ", k, ")");
     # print("Radius = ", r);
 
+def sharedSegmentPolygon(tri, poly):
+    for t in list(combinations(tri, 2)):
+        if set(t) in poly:
+            return True
+    return False
+            
 def sharedSegment(tri_a, tri_b):
     for a in set(combinations(tri_a, 2)):
         for b in set(combinations(tri_b, 2)):
             if a == b:
-                return a
+                return frozenset(a)
     return {}
 
 canvas_width = 800
@@ -110,7 +116,7 @@ def paint(event):
             contains.append(i)
 
     # if more than one triangle's circumcircle contains added point, keep track of segment that needs to be removed
-    shared_segments=[]
+    shared_segments=set()
 
     # get all the vertices, which added point needs, to add new triangles
     vertices_of_new_triangles=set()
@@ -128,7 +134,13 @@ def paint(event):
         if shared_segment != {}:
             vertices_of_new_triangles = vertices_of_new_triangles | (set(tri_a) | set(tri_b))
             triangles_to_be_removed = triangles_to_be_removed | set(combo)
-            shared_segments.append(shared_segment)
+            
+            print("::::::::::::::::::::::::::::::::::")
+            print(shared_segment)
+            shared_segments = shared_segments.union({shared_segment})
+            print(shared_segments)
+            
+            print("::::::::::::::::::::::::::::::::::")
 
 
     # create a list of the indices of triangles to be removed, and reverse order to delete from "triangles" list
@@ -137,11 +149,25 @@ def paint(event):
     print(triangles)
     print(triangles_to_be_removed)
 
+    # keep track of all of the segments of the triangles to be removed
+    all_segments=set()
+
     # remove triangles, which contained the point, that had a segment that was shared
     for i in triangles_to_be_removed:
-        triangles.pop(i)
+        # get segments of removed triangle
+        for tri_segment in list(combinations(triangles.pop(i), 2)):
+            all_segments = all_segments.union({frozenset(tri_segment)})
+            
+    # create a polygon, which the added point needs to share a segment with, in order to add a triangle
+    polygon_segments = all_segments.difference(shared_segments)
+
+    print("---------------------------------------------")
+    print(all_segments)
+    print(shared_segments)
+    print(polygon_segments)
 
     print(triangles)
+    
 
     if len(contains) == 1:
         for tri in list(combinations((set(triangles[contains[0]]) | {last_point}), 3)):
@@ -150,27 +176,25 @@ def paint(event):
         # remove triangle containing point
         triangles.pop(contains[0])
     else:
-        new_triangles=[]
+        # new_triangles=[]
         # create triangles with added point and all the vertices of triangles that were removed
         for tri in list(combinations(list(vertices_of_new_triangles | {last_point}), 3)):
             # if triangle vertices contain added point, use triangle
             if last_point in tri:
-                if sharedSegment((0,1,2), tri) != {}:
-                        # if new triangle connects to two vertices of super triangle, add it
-                        new_triangles.append(tri)
-                        continue
-                for orig_tri in triangles:
-                    seg = sharedSegment(orig_tri, tri)
-                    if seg != {}:
-                        if tri == (4,6,7):
-                            print("ERRRRRRRRRORRRRRRRRR")
-                            print(seg)
-                        # new triangle has found a shared segment with original triangles, so add it and stop looking
-                        new_triangles.append(tri)
-                        break
+            
+                # if sharedSegment((0,1,2), tri) != {}:
+                    
+                    # triangles.append(tri)
+                    # continue
+                print(tri)
+                print(polygon_segments)
+                if sharedSegmentPolygon(tri, polygon_segments):
+                    print("#########################################################################################################################################")
+                    print(tri)
+                    triangles.append(tri)
 
         # update original triangles with new triangles
-        triangles = triangles + new_triangles
+        # triangles = triangles + new_triangles
 
     print(triangles)
 
@@ -185,8 +209,8 @@ def paint(event):
     # draw triangles
     for triangle in triangles:
         # print(triangle)
-        # if any(x in triangle for x in [0,1,2]):
-            # continue
+        if any(x in triangle for x in [0,1,2]):
+            continue
         w.create_polygon(points[triangle[0]], points[triangle[1]], points[triangle[2]], fill='', width=1, outline='red', tag="triangle")
 
     print(points)
@@ -197,9 +221,9 @@ master = Tk()
 master.title("")
 
 # create points for super triangle
-points.append((400,0))
-points.append((0,623))
-points.append((800,623))
+points.append((400,-1500))
+points.append((-1200,1900))
+points.append((2000,1900))
 
 # add super triangle
 triangles.append((0,1,2))
@@ -221,9 +245,19 @@ paint(myPoint(420, 423))
 paint(myPoint(600, 323))
 paint(myPoint(340, 249))
 paint(myPoint(269, 414))
+paint(myPoint(120, 78))
+paint(myPoint(694, 508))
+paint(myPoint(481, 177))
+paint(myPoint(330, 93))
 
 # another bad case
 # [(400, -300), (-400, 900), (1200, 900), (397, 249), (356, 369), (541, 386), (539, 241), (440, 177)]
+
+# [(400, 0), (0, 623), (800, 623), (400, 323), (420, 423), (600, 323.00001), (340, 249), (269, 414), (472, 383), (464, 213), (213, 238), (330, 138), (501, 305), (411, 264), (444, 123), (234, 129), (209, 341), (259, 343)]
+
+# [(400, -200), (0, 600), (800, 600), (400, 323), (420, 423), (600, 323.00001), (340, 249), (269, 414), (482, 215), (376, 190), (271, 163), (240, 265), (199, 317), (199.00001, 165), (440, 130), (285, 74), (98, 347)]
+
+
 
 # paint(myPoint(472, 248))
 # paint(myPoint(576, 460))

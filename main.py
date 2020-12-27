@@ -75,11 +75,26 @@ triangles=[]
 num_of_lines = 0
 num_of_circles = 0
 
+x_coords = []
+y_coords = []
+
 def paint(event):
-    global points, num_of_lines, num_of_circles, triangles
+    global points, num_of_lines, num_of_circles, triangles, x_coords, y_coords
+
+    x, y = event.x, event.y
+
+    while x in x_coords:
+        x += .00001
+        
+    x_coords.append(x)
+        
+    while y in y_coords:
+        y += .00001
+        
+    y_coords.append(y)
 
     # keep track of points
-    points.append((event.x, event.y))
+    points.append((x, y))
 
     # index of last point added
     last_point = len(points)-1
@@ -145,7 +160,11 @@ def paint(event):
                         new_triangles.append(tri)
                         continue
                 for orig_tri in triangles:
-                    if sharedSegment(orig_tri, tri) != {}:
+                    seg = sharedSegment(orig_tri, tri)
+                    if seg != {}:
+                        if tri == (4,6,7):
+                            print("ERRRRRRRRRORRRRRRRRR")
+                            print(seg)
                         # new triangle has found a shared segment with original triangles, so add it and stop looking
                         new_triangles.append(tri)
                         break
@@ -166,9 +185,11 @@ def paint(event):
     # draw triangles
     for triangle in triangles:
         # print(triangle)
+        # if any(x in triangle for x in [0,1,2]):
+            # continue
         w.create_polygon(points[triangle[0]], points[triangle[1]], points[triangle[2]], fill='', width=1, outline='red', tag="triangle")
 
-
+    print(points)
 
 
 
@@ -176,9 +197,9 @@ master = Tk()
 master.title("")
 
 # create points for super triangle
-points.append((400,-300))
-points.append((-400,900))
-points.append((1200,900))
+points.append((400,0))
+points.append((0,623))
+points.append((800,623))
 
 # add super triangle
 triangles.append((0,1,2))
@@ -194,14 +215,25 @@ class myPoint:
     self.x = x
     self.y = y
 
-p1 = myPoint(400, 300)
-paint(p1)
 
-p1 = myPoint(400, 400)
-paint(p1)
+paint(myPoint(400, 323))
+paint(myPoint(420, 423))
+paint(myPoint(600, 323))
+paint(myPoint(340, 249))
+paint(myPoint(269, 414))
 
-p1 = myPoint(600, 300)
-paint(p1)
+# another bad case
+# [(400, -300), (-400, 900), (1200, 900), (397, 249), (356, 369), (541, 386), (539, 241), (440, 177)]
+
+# paint(myPoint(472, 248))
+# paint(myPoint(576, 460))
+
+
+# paint(myPoint(332, 226))
+# paint(myPoint(269, 391))
+# paint(myPoint(472, 248))
+# paint(myPoint(576, 460))
+# paint(myPoint(600, 300))
 
 
 mainloop()

@@ -57,9 +57,6 @@ def findCircle(p1, p2, p3):
 
     return (h,k,r)
 
-    # print("Centre = (", h, ", ", k, ")");
-    # print("Radius = ", r);
-
 def sharedSegmentPolygon(tri, poly):
     for t in list(combinations(tri, 2)):
         if set(t) in poly:
@@ -118,10 +115,6 @@ def paint(event):
     # if more than one triangle's circumcircle contains added point, keep track of segment that needs to be removed
     shared_segments=set()
 
-    # get all the vertices, which added point needs, to add new triangles
-    vertices_of_new_triangles=set()
-    # get indices of "triangles" list that need to be removed
-    triangles_to_be_removed=set()
 
     for combo in list(combinations(contains, 2)):
 
@@ -132,88 +125,56 @@ def paint(event):
         # if two triangles share a segment, they need to be removed, and then the point needs to connect to all vertices of these triangles
         shared_segment=sharedSegment(tri_a, tri_b)
         if shared_segment != {}:
-            vertices_of_new_triangles = vertices_of_new_triangles | (set(tri_a) | set(tri_b))
-            triangles_to_be_removed = triangles_to_be_removed | set(combo)
-            
-            print("::::::::::::::::::::::::::::::::::")
-            print(shared_segment)
             shared_segments = shared_segments.union({shared_segment})
-            print(shared_segments)
-            
-            print("::::::::::::::::::::::::::::::::::")
 
 
-    # create a list of the indices of triangles to be removed, and reverse order to delete from "triangles" list
-    triangles_to_be_removed = list(triangles_to_be_removed)
-    triangles_to_be_removed.sort(reverse=True)
-    print(triangles)
-    print(triangles_to_be_removed)
 
+
+
+    # reverse sort the list of triangles whose circumcircle contains added point, in order to remove from "triangles" list
+    contains.sort(reverse=True)
+    # vertices of new triangles
+    vertices_of_new_triangles=set()
     # keep track of all of the segments of the triangles to be removed
     all_segments=set()
 
-    # remove triangles, which contained the point, that had a segment that was shared
-    for i in triangles_to_be_removed:
+    
+    for i in contains:
+        # remove triangle
+        tri = triangles.pop(i)
+        # get vertices of removed triangle, which added point needs, to form new triangles
+        vertices_of_new_triangles = vertices_of_new_triangles.union(tri)
         # get segments of removed triangle
-        for tri_segment in list(combinations(triangles.pop(i), 2)):
+        for tri_segment in list(combinations(tri, 2)):
             all_segments = all_segments.union({frozenset(tri_segment)})
             
     # create a polygon, which the added point needs to share a segment with, in order to add a triangle
     polygon_segments = all_segments.difference(shared_segments)
-
-    print("---------------------------------------------")
-    print(all_segments)
-    print(shared_segments)
-    print(polygon_segments)
-
-    print(triangles)
     
+    print(vertices_of_new_triangles)
 
-    if len(contains) == 1:
-        for tri in list(combinations((set(triangles[contains[0]]) | {last_point}), 3)):
-            if last_point in tri:
+    # create triangles with added point and all the vertices of triangles that were removed
+    for tri in list(combinations(list(vertices_of_new_triangles | {last_point}), 3)):
+        # if triangle vertices contain added point, use triangle
+        if last_point in tri:
+            if sharedSegmentPolygon(tri, polygon_segments):
                 triangles.append(tri)
-        # remove triangle containing point
-        triangles.pop(contains[0])
-    else:
-        # new_triangles=[]
-        # create triangles with added point and all the vertices of triangles that were removed
-        for tri in list(combinations(list(vertices_of_new_triangles | {last_point}), 3)):
-            # if triangle vertices contain added point, use triangle
-            if last_point in tri:
-            
-                # if sharedSegment((0,1,2), tri) != {}:
-                    
-                    # triangles.append(tri)
-                    # continue
-                print(tri)
-                print(polygon_segments)
-                if sharedSegmentPolygon(tri, polygon_segments):
-                    print("#########################################################################################################################################")
-                    print(tri)
-                    triangles.append(tri)
 
-        # update original triangles with new triangles
-        # triangles = triangles + new_triangles
-
-    print(triangles)
 
     # draw vertex
     x1, y1 = (event.x - 4), (event.y - 4)
     x2, y2 = (event.x + 4), (event.y + 4)
     w.create_oval(x1, y1, x2, y2, fill="#0080ff", tag="vertex")
 
-
+    print(triangles)
 
     w.delete("triangle")
     # draw triangles
     for triangle in triangles:
-        # print(triangle)
+        # don't draw any triangles that are formed using super triangle vertices
         if any(x in triangle for x in [0,1,2]):
             continue
         w.create_polygon(points[triangle[0]], points[triangle[1]], points[triangle[2]], fill='', width=1, outline='red', tag="triangle")
-
-    print(points)
 
 
 
@@ -221,9 +182,9 @@ master = Tk()
 master.title("")
 
 # create points for super triangle
-points.append((400,-1500))
-points.append((-1200,1900))
-points.append((2000,1900))
+points.append((400,-1200))
+points.append((-800,1200))
+points.append((1600,1200))
 
 # add super triangle
 triangles.append((0,1,2))
@@ -241,14 +202,14 @@ class myPoint:
 
 
 paint(myPoint(400, 323))
-paint(myPoint(420, 423))
-paint(myPoint(600, 323))
-paint(myPoint(340, 249))
-paint(myPoint(269, 414))
-paint(myPoint(120, 78))
-paint(myPoint(694, 508))
-paint(myPoint(481, 177))
-paint(myPoint(330, 93))
+# paint(myPoint(420, 423))
+# paint(myPoint(600, 323))
+# paint(myPoint(340, 249))
+# paint(myPoint(269, 414))
+# paint(myPoint(120, 78))
+# paint(myPoint(694, 508))
+# paint(myPoint(481, 177))
+# paint(myPoint(330, 93))
 
 # another bad case
 # [(400, -300), (-400, 900), (1200, 900), (397, 249), (356, 369), (541, 386), (539, 241), (440, 177)]

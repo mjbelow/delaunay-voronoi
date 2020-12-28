@@ -58,17 +58,17 @@ def findCircle(p1, p2, p3):
     return (h,k,r)
 
 def sharedSegmentPolygon(tri, poly):
-    for t in list(combinations(tri, 2)):
+    for t in combinations(tri, 2):
         if set(t) in poly:
             return True
     return False
-            
+
 def sharedSegment(tri_a, tri_b):
-    for a in set(combinations(tri_a, 2)):
-        for b in set(combinations(tri_b, 2)):
-            if a == b:
-                return frozenset(a)
-    return {}
+    for a in combinations(tri_a, 2):
+        for b in combinations(tri_b, 2):
+            if set(a) == set(b):
+                return {frozenset(a)}
+    return set()
 
 canvas_width = 800
 canvas_height = 600
@@ -84,27 +84,24 @@ y_coords = []
 def paint(event):
     global points, num_of_lines, num_of_circles, triangles, x_coords, y_coords
 
-    x, y = event.x, event.y
 
+    x, y = event.x, event.y
     while x in x_coords:
         x += .00001
-        
     x_coords.append(x)
-        
     while y in y_coords:
         y += .00001
-        
     y_coords.append(y)
+
 
     # keep track of points
     points.append((x, y))
-
     # index of last point added
     last_point = len(points)-1
 
+
     # find out what triangle's circumcircles contain added point
     contains=[]
-
     for i in range(len(triangles)):
         hkr=findCircle(points[triangles[i][0]], points[triangles[i][1]], points[triangles[i][2]])
 
@@ -112,23 +109,17 @@ def paint(event):
         if dist((hkr[0], hkr[1]), points[last_point]) < hkr[2]:
             contains.append(i)
 
+
     # if more than one triangle's circumcircle contains added point, keep track of segment that needs to be removed
     shared_segments=set()
-
-
-    for combo in list(combinations(contains, 2)):
+    for combo in combinations(contains, 2):
 
         # pair of triangles that contain point
         tri_a = triangles[combo[0]]
         tri_b = triangles[combo[1]]
 
-        # if two triangles share a segment, they need to be removed, and then the point needs to connect to all vertices of these triangles
-        shared_segment=sharedSegment(tri_a, tri_b)
-        if shared_segment != {}:
-            shared_segments = shared_segments.union({shared_segment})
-
-
-
+        # if two triangles share a segment, the segment needs to be removed to form the polygon that the added points needs to form new triangles
+        shared_segments = shared_segments.union(sharedSegment(tri_a, tri_b))
 
 
     # reverse sort the list of triangles whose circumcircle contains added point, in order to remove from "triangles" list
@@ -138,35 +129,29 @@ def paint(event):
     # keep track of all of the segments of the triangles to be removed
     all_segments=set()
 
-    
+
     for i in contains:
         # remove triangle
         tri = triangles.pop(i)
         # get vertices of removed triangle, which added point needs, to form new triangles
         vertices_of_new_triangles = vertices_of_new_triangles.union(tri)
         # get segments of removed triangle
-        for tri_segment in list(combinations(tri, 2)):
+        for tri_segment in combinations(tri, 2):
             all_segments = all_segments.union({frozenset(tri_segment)})
-            
+
+
     # create a polygon, which the added point needs to share a segment with, in order to add a triangle
     polygon_segments = all_segments.difference(shared_segments)
-    
-    print(vertices_of_new_triangles)
+
 
     # create triangles with added point and all the vertices of triangles that were removed
-    for tri in list(combinations(list(vertices_of_new_triangles | {last_point}), 3)):
+    for tri in combinations(list(vertices_of_new_triangles | {last_point}), 3):
         # if triangle vertices contain added point, use triangle
         if last_point in tri:
+		    # if triangle shares a segment of the polygon of triangles whose circumcircles contained the added point, add triangle
             if sharedSegmentPolygon(tri, polygon_segments):
                 triangles.append(tri)
 
-
-    # draw vertex
-    x1, y1 = (event.x - 4), (event.y - 4)
-    x2, y2 = (event.x + 4), (event.y + 4)
-    w.create_oval(x1, y1, x2, y2, fill="#0080ff", tag="vertex")
-
-    print(triangles)
 
     w.delete("triangle")
     # draw triangles
@@ -177,14 +162,19 @@ def paint(event):
         w.create_polygon(points[triangle[0]], points[triangle[1]], points[triangle[2]], fill='', width=1, outline='red', tag="triangle")
 
 
+    w.delete("vertex")
+    # draw vertices
+    for point in points:
+        w.create_circle(point[0], point[1], 4, fill="#0080ff", tag="vertex")
+
 
 master = Tk()
 master.title("")
 
 # create points for super triangle
-points.append((400,-1200))
-points.append((-800,1200))
-points.append((1600,1200))
+points.append((400,7800))
+points.append((-5600,-4200))
+points.append((6400,-4200))
 
 # add super triangle
 triangles.append((0,1,2))
@@ -195,40 +185,15 @@ w = Canvas(master,
 w.pack(expand=YES, fill=BOTH)
 w.bind("<ButtonRelease-1>", paint)
 
-class myPoint:
+class Point:
   def __init__(self, x, y):
     self.x = x
     self.y = y
 
-
-paint(myPoint(400, 323))
-# paint(myPoint(420, 423))
-# paint(myPoint(600, 323))
-# paint(myPoint(340, 249))
-# paint(myPoint(269, 414))
-# paint(myPoint(120, 78))
-# paint(myPoint(694, 508))
-# paint(myPoint(481, 177))
-# paint(myPoint(330, 93))
-
-# another bad case
-# [(400, -300), (-400, 900), (1200, 900), (397, 249), (356, 369), (541, 386), (539, 241), (440, 177)]
-
-# [(400, 0), (0, 623), (800, 623), (400, 323), (420, 423), (600, 323.00001), (340, 249), (269, 414), (472, 383), (464, 213), (213, 238), (330, 138), (501, 305), (411, 264), (444, 123), (234, 129), (209, 341), (259, 343)]
-
-# [(400, -200), (0, 600), (800, 600), (400, 323), (420, 423), (600, 323.00001), (340, 249), (269, 414), (482, 215), (376, 190), (271, 163), (240, 265), (199, 317), (199.00001, 165), (440, 130), (285, 74), (98, 347)]
-
-
-
-# paint(myPoint(472, 248))
-# paint(myPoint(576, 460))
-
-
-# paint(myPoint(332, 226))
-# paint(myPoint(269, 391))
-# paint(myPoint(472, 248))
-# paint(myPoint(576, 460))
-# paint(myPoint(600, 300))
+# add some sample points
+sample = [(400, 323), (402, 461), (588, 444), (594, 296), (533, 237), (398, 197), (312, 350), (174, 133), (146, 368), (215, 270), (192, 489), (203, 430), (303, 15), (316, 135), (449, 18), (618, 139), (521, 131), (712, 188), (618, 531),  (713, 501)]
+for p in sample:
+    paint(Point(p[0], p[1]))
 
 
 mainloop()

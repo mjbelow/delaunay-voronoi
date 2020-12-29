@@ -6,11 +6,12 @@ def _create_circle(self, x, y, r, **kwargs):
     return self.create_oval(x-r, y-r, x+r, y+r, **kwargs)
 Canvas.create_circle = _create_circle
 
-def findCircle(p1, p2, p3):
+def findCircle(tri):
+    global points
 
-    x1, y1 = p1
-    x2, y2 = p2
-    x3, y3 = p3
+    x1, y1 = points[tri[0]]
+    x2, y2 = points[tri[1]]
+    x3, y3 = points[tri[2]]
 
     x12 = x1 - x2;
     x13 = x1 - x3;
@@ -55,7 +56,7 @@ def findCircle(p1, p2, p3):
     # r is the radius
     r = round(sqrt(sqr_of_r), 5);
 
-    return (h,k,r)
+    return ((h,k),r)
 
 def sharedSegmentPolygon(tri, poly):
     for t in combinations(tri, 2):
@@ -75,6 +76,7 @@ canvas_height = 600
 
 points=[]
 triangles=[]
+center_radius=[]
 num_of_lines = 0
 num_of_circles = 0
 
@@ -103,10 +105,8 @@ def paint(event):
     # find out what triangle's circumcircles contain added point
     contains=[]
     for i in range(len(triangles)):
-        hkr=findCircle(points[triangles[i][0]], points[triangles[i][1]], points[triangles[i][2]])
-
         # compare distance from circumcenter to added point, to circumcircle's radius
-        if dist((hkr[0], hkr[1]), points[last_point]) < hkr[2]:
+        if dist(center_radius[i][0], points[last_point]) < center_radius[i][1]:
             contains.append(i)
 
 
@@ -133,6 +133,8 @@ def paint(event):
     for i in contains:
         # remove triangle
         tri = triangles.pop(i)
+        # remove center_radius associated with removed triangle
+        center_radius.pop(i)
         # get vertices of removed triangle, which added point needs, to form new triangles
         vertices_of_new_triangles = vertices_of_new_triangles.union(tri)
         # get segments of removed triangle
@@ -148,18 +150,34 @@ def paint(event):
     for tri in combinations(list(vertices_of_new_triangles | {last_point}), 3):
         # if triangle vertices contain added point, use triangle
         if last_point in tri:
-		    # if triangle shares a segment of the polygon of triangles whose circumcircles contained the added point, add triangle
+            # if triangle shares a segment of the polygon of triangles whose circumcircles contained the added point, add triangle
             if sharedSegmentPolygon(tri, polygon_segments):
                 triangles.append(tri)
+                # keep track of center_radius of triangle's circumcircle
+                center_radius.append(findCircle(triangles[len(triangles)-1]))
 
+    w.delete("voronoi")
+    # draw voronoi diagram
+    for combo in combinations(range(len(triangles)), 2):
+
+        # pair of triangles
+        tri_a = triangles[combo[0]]
+        tri_b = triangles[combo[1]]
+
+        # if two triangles share a segment, draw a line connecting their circumcircle's center
+        if sharedSegment(tri_a, tri_b) != set():
+            w.create_line(center_radius[combo[0]][0], center_radius[combo[1]][0], dash=(4, 2), fill="#aaa", tag="voronoi")
 
     w.delete("triangle")
     # draw triangles
-    for triangle in triangles:
+    for i in range(len(triangles)):
         # don't draw any triangles that are formed using super triangle vertices
-        if any(x in triangle for x in [0,1,2]):
+        if any(x in triangles[i] for x in [0,1,2]):
             continue
-        w.create_polygon(points[triangle[0]], points[triangle[1]], points[triangle[2]], fill='', width=1, outline='red', tag="triangle")
+
+        w.create_polygon(points[triangles[i][0]], points[triangles[i][1]], points[triangles[i][2]], fill='', width=1, outline='red', tag="triangle")
+        # points of voronoi diagram
+        # w.create_circle(center_radius[i][0][0], center_radius[i][0][1], 4, fill="green", tag="voronoi")
 
 
     w.delete("vertex")
@@ -178,6 +196,8 @@ points.append((6400,-4200))
 
 # add super triangle
 triangles.append((0,1,2))
+# keep track of center_radius of triangle's circumcircle
+center_radius.append(findCircle((0,1,2)))
 
 w = Canvas(master,
            width=canvas_width,

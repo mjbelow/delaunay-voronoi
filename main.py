@@ -80,6 +80,11 @@ center_radius=[]
 num_of_lines = 0
 num_of_circles = 0
 
+# style of diagrams: 0 = hidden, 1 = light, 2 = dark
+delaunay=2
+voronoi=1
+colors={0: "", 1: "#ccc", 2: "#333"}
+
 x_coords = []
 y_coords = []
 
@@ -166,16 +171,16 @@ def paint(event):
 
         # if two triangles share a segment, draw a line connecting their circumcircle's center
         if sharedSegment(tri_a, tri_b) != set():
-            w.create_line(center_radius[combo[0]][0], center_radius[combo[1]][0], dash=(4, 2), fill="#aaa", tag="voronoi")
+            w.create_line(center_radius[combo[0]][0], center_radius[combo[1]][0], fill=colors[voronoi], width=1, tag="voronoi")
 
-    w.delete("triangle")
+    w.delete("delaunay")
     # draw triangles
     for i in range(len(triangles)):
         # don't draw any triangles that are formed using super triangle vertices
         if any(x in triangles[i] for x in [0,1,2]):
             continue
 
-        w.create_polygon(points[triangles[i][0]], points[triangles[i][1]], points[triangles[i][2]], fill='', width=1, outline='red', tag="triangle")
+        w.create_polygon(points[triangles[i][0]], points[triangles[i][1]], points[triangles[i][2]], fill="", width=1, outline=colors[delaunay], tag="delaunay")
         # points of voronoi diagram
         # w.create_circle(center_radius[i][0][0], center_radius[i][0][1], 4, fill="green", tag="voronoi")
 
@@ -185,6 +190,30 @@ def paint(event):
     for point in points:
         w.create_circle(point[0], point[1], 4, fill="#0080ff", tag="vertex")
 
+    reorderItems()
+
+def reorderItems():
+    # move items to front if diagram option is 2
+    if delaunay == 2:
+        w.tag_raise("delaunay")
+    if voronoi == 2:
+        w.tag_raise("voronoi")
+    # always move vertices to front
+    w.tag_raise("vertex")
+
+def changeDiagramStyle(event):
+    global delaunay, voronoi
+
+    if event.char == 'd':
+        delaunay = (delaunay + 1) % 3
+        # ternary operator example
+        # w.itemconfig("delaunay", outline="#000" if delaunay == 2 else "#ccc" if delaunay == 1 else "")
+        w.itemconfig("delaunay", outline=colors[delaunay])
+    elif event.char == 'v':
+        voronoi = (voronoi + 1) % 3
+        w.itemconfig("voronoi", fill=colors[voronoi])
+
+    reorderItems()
 
 master = Tk()
 master.title("")
@@ -204,6 +233,10 @@ w = Canvas(master,
            height=canvas_height)
 w.pack(expand=YES, fill=BOTH)
 w.bind("<ButtonRelease-1>", paint)
+# press 'd' to change style of delaunay diagram
+w.bind_all("<d>", changeDiagramStyle)
+# press 'v' to change style of voronoi diagram
+w.bind_all("<v>", changeDiagramStyle)
 
 class Point:
   def __init__(self, x, y):

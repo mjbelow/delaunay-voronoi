@@ -93,6 +93,13 @@ def paint(event):
 
 
     x, y = event.x, event.y
+
+    # don't allow points to be added that are close to each other
+    for point in points:
+        if dist((x, y), point) < 16:
+            return
+
+    # if point shares a coordinate with any other point, add .00001 to avoid colinear points
     while x in x_coords:
         x += .00001
     x_coords.append(x)

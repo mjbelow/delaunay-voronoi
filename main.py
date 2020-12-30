@@ -235,6 +235,19 @@ def toggleVertices(event):
     else:
         w.itemconfig("vertex", fill="", outline="")
 
+def clearPoints(event):
+    global points, triangles, center_radius
+
+    # keep first three points of super triangle
+    points = points[:3]
+
+    # reset triangles to only have super triangle
+    triangles=[(0,1,2)]
+    center_radius=[findCircle((0,1,2))]
+
+    # clear canvas
+    w.delete("all")
+
 master = Tk()
 master.title("")
 
@@ -259,6 +272,8 @@ w.bind_all("<d>", changeDiagramStyle)
 w.bind_all("<v>", changeDiagramStyle)
 # press 'p' to toggle vertex visibility
 w.bind_all("<p>", toggleVertices)
+# press 'c' to clear all points
+w.bind_all("<c>", clearPoints)
 
 class Point:
   def __init__(self, x, y):

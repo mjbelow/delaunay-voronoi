@@ -85,6 +85,9 @@ delaunay=2
 voronoi=1
 colors={0: "", 1: "#ccc", 2: "#333"}
 
+# whether or not to show vertices
+vertexVisible=True
+
 x_coords = []
 y_coords = []
 
@@ -192,10 +195,11 @@ def paint(event):
         # w.create_circle(center_radius[i][0][0], center_radius[i][0][1], 4, fill="green", tag="voronoi")
 
 
-    w.delete("vertex")
-    # draw vertices
-    for point in points:
-        w.create_circle(point[0], point[1], 4, fill="#0080ff", tag="vertex")
+    # draw vertex
+    if vertexVisible:
+        w.create_circle(x, y, 4, fill="#0080ff", outline="#000", tag="vertex")
+    else:
+        w.create_circle(x, y, 4, fill="", outline="", tag="vertex")
 
     reorderItems()
 
@@ -222,6 +226,15 @@ def changeDiagramStyle(event):
 
     reorderItems()
 
+def toggleVertices(event):
+    global vertexVisible
+
+    vertexVisible = not vertexVisible
+    if vertexVisible:
+        w.itemconfig("vertex", fill="#0080ff", outline="#000")
+    else:
+        w.itemconfig("vertex", fill="", outline="")
+
 master = Tk()
 master.title("")
 
@@ -244,6 +257,8 @@ w.bind("<ButtonRelease-1>", paint)
 w.bind_all("<d>", changeDiagramStyle)
 # press 'v' to change style of voronoi diagram
 w.bind_all("<v>", changeDiagramStyle)
+# press 'p' to toggle vertex visibility
+w.bind_all("<p>", toggleVertices)
 
 class Point:
   def __init__(self, x, y):

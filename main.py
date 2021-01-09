@@ -1,6 +1,17 @@
-from tkinter import *
-from itertools import *
-from math import *
+try:
+    # Python 3
+    from tkinter import *
+except:
+    # Python 2
+    from Tkinter import *
+from itertools import combinations
+from math import sqrt
+try:
+    # distance method new in Python version 3.8
+    from math import dist
+except:
+    def dist(a, b):
+        return sqrt((a[0]-b[0])**2 + (a[1]-b[1])**2)
 
 def _create_circle(self, x, y, r, **kwargs):
     return self.create_oval(x-r, y-r, x+r, y+r, **kwargs)

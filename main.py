@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 try:
     # Python 3
     from tkinter import *

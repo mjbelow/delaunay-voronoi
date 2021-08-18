@@ -1,7 +1,15 @@
-FROM python:3.8-slim-buster
+# debian base image
+FROM python:3.9.6-slim-bullseye
 RUN apt update && apt -y install python3-tk
-RUN mkdir -p app
-WORKDIR /app
+
+# alpine base image
+#FROM python:3.9.6-alpine3.14
+#RUN apk update && apk add python3-tkinter
+
+ENV DISPLAY=host.docker.internal:0.0
+
+RUN mkdir -p /opt/app
+WORKDIR /opt/app
 COPY . .
-VOLUME ["/app"]
+
 ENTRYPOINT ["./main.py"]
